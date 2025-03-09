@@ -28,10 +28,6 @@ def init_db():
 def add_employee(first_name, last_name, phone, email):
     conn = sqlite3.connect("employee_system.db")
     cursor = conn.cursor()
-    cursor.execute("""INSERT into employees (
-                            f_name, 
-                            l_name, 
-                            phone, 
-                            email)
+    cursor.execute("""INSERT into employees (f_name, l_name, phone, email)
                             VALUES (?, ?, ?, ?)""",
                    (first_name, last_name, phone, email))
