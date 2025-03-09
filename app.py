@@ -31,3 +31,6 @@ def add_employee(first_name, last_name, phone, email):
     cursor.execute("""INSERT into employees (f_name, l_name, phone, email)
                             VALUES (?, ?, ?, ?)""",
                    (first_name, last_name, phone, email))
+    conn.commit()
+    conn.close()
+    print(f"Added Employee {first_name} {last_name}")
