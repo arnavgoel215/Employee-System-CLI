@@ -12,5 +12,14 @@ def init_db():
             email TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS paychecks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            employee_id INTEGER NOT NULL,
+            hours INTEGER NOT NULL,
+            pay REAL NOT NULL,
+            FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE 
+        )
+    """)
     conn.commit()
     conn.close()
