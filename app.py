@@ -2,7 +2,7 @@ import zmq
 
 context = zmq.Context()
 socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:5555")
+socket.connect("tcp://localhost:5556")
 
 def send_request(command, data={}):
     socket.send_json({"command": command, **data})
@@ -21,14 +21,15 @@ def view_employees():
     response = send_request("view_employees")
     if "data" in response:
         print("\nEmployees:")
+        print(f"ID:   First Name:   Last Name:       Phone:             Email:")
         for employee in response["data"]:
-            print(f"{employee[0]} {employee[1]} {employee[2]} {employee[3]}")
+            print(f"{employee[0]}     {employee[1]}          {employee[2]}            {employee[3]}       {employee[4]}")
     else:
         print(response["message"])
 
 def delete_employee():
     view_employees()
-    employee_id = int(input("Enter id of employee you want to delete: "))
+    employee_id = input("Enter id of employee you want to delete: ")
     confirmation = input("Are you sure you want to delete this employee? This action is irreversible. Enter y to proceed otherwise enter any key to go back: ")
     if confirmation.lower() == 'y':
         response = send_request("delete_employee", {"id": employee_id})
