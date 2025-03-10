@@ -1,36 +1,123 @@
-import sqlite3
+import zmq
 
-def init_db():
-    conn = sqlite3.connect("employee_system.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS employees (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            f_name TEXT NOT NULL,
-            l_bane TEXT NOT NULL,
-            phone TEXT,
-            email TEXT
-        )
-    """)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS paychecks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            employee_id INTEGER NOT NULL,
-            hours INTEGER NOT NULL,
-            pay REAL NOT NULL,
-            FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE 
-        )
-    """)
-    conn.commit()
-    conn.close()
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://localhost:5555")
 
+def send_request(command, data={}):
+    socket.send_json({"command": command, **data})
+    return socket.recv_json()
 
-def add_employee(first_name, last_name, phone, email):
-    conn = sqlite3.connect("employee_system.db")
-    cursor = conn.cursor()
-    cursor.execute("""INSERT into employees (f_name, l_name, phone, email)
-                            VALUES (?, ?, ?, ?)""",
-                   (first_name, last_name, phone, email))
-    conn.commit()
-    conn.close()
-    print(f"Added Employee {first_name} {last_name}")
+def add_employee():
+    first_name = input("Enter first name: ")
+    last_name = input("Enter last name: ")
+    email = input("Enter email address: ")
+    phone = input("Enter phone number: ")
+    response = send_request("add_employee",
+                            {"first_name": first_name, "last_name": last_name, "phone": phone, "email": email})
+    print(response["message"])
+
+def view_employees():
+    response = send_request("view_employees")
+    if "data" in response:
+        print("\nEmployees:")
+        for employee in response["data"]:
+            print(f"{employee[0]} {employee[1]} {employee[2]} {employee[3]}")
+    else:
+        print(response["message"])
+
+def delete_employee():
+    view_employees()
+    employee_id = int(input("Enter id of employee you want to delete: "))
+    confirmation = input("Are you sure you want to delete this employee? This action is irreversible. Enter y to proceed otherwise enter any key to go back: ")
+    if confirmation.lower() == 'y':
+        response = send_request("delete_employee", {"id": employee_id})
+        print(response["message"])
+
+def update_employee():
+    view_employees()
+    employee_id = input("Enter id of employee you want to update: ")
+    first_name = input("Enter first name: ")
+    last_name = input("Enter last name: ")
+    phone = input("Enter phone number: ")
+    email = input("Enter email address: ")
+    response = send_request(
+        "update_employee",
+        {"first_name": first_name, "last_name": last_name, "phone": phone, "email": email, "id": employee_id})
+    print(response["message"])
+
+def add_paycheck():
+    hours = int(input("Enter hours worked: "))
+    rate = float(input("Enter hourly rate of pay: "))
+    total_pay = hours * rate
+    view_employees()
+    employee_id = input("Enter id number of employee for this paycheck: ")
+    response = send_request("add_paycheck",
+                            {"hours": hours, "rate": rate, "employee_id": employee_id, "pay": total_pay})
+    print(response["message"])
+
+def view_paychecks():
+    response = send_request("view_paychecks")
+    if "data" in response:
+        print("\nPaychecks:")
+        for paycheck in response["data"]:
+            print(f"{paycheck[0]} {paycheck[1]} {paycheck[2]} {paycheck[3]} {paycheck[4]}")
+    else:
+        print(response["message"])
+
+def delete_paycheck():
+    view_paychecks()
+    paycheck_id = int(input("Enter id of employee you want to delete: "))
+    confirmation = input("Are you sure you want to delete this paycheck? This action is irreversible. Enter y to proceed otherwise enter any key to go back: ")
+    if confirmation.lower() == 'y':
+        response = send_request("delete_paycheck", {"id": paycheck_id})
+        print(response["message"])
+
+def update_paycheck():
+    view_paychecks()
+    paycheck_id = input("Enter id number of paycheck you want to update: ")
+    hours = input("Enter hours worked: ")
+    rate = input("Enter hourly rate of pay: ")
+    total_pay = hours * rate
+    employee_id = ("Enter id number of employee for this paycheck: ")
+    response = send_request("update_paycheck",
+                            {"id": paycheck_id, "hours": hours, "rate": rate, "pay": total_pay, "employee_id": employee_id})
+    print(response["message"])
+
+if __name__ == "__main__":
+    while True:
+        print("\nEmployee Management System Menu:")
+        print("1. Add Employee")
+        print("2. View Employees")
+        print("3. Delete Employee")
+        print("4. Update Employee")
+        print("5. Add Paycheck")
+        print("6. View Paychecks")
+        print("7. Delete Paycheck")
+        print("8. Update Paycheck")
+        print("9. Send PDF to Employee")
+        print("10. Exit")
+
+        selection = int(input("Enter selection: "))
+
+        if selection == 1:
+            add_employee()
+        elif selection == 2:
+            view_employees()
+        elif selection == 3:
+            delete_employee()
+        elif selection == 4:
+            update_employee()
+        elif selection == 5:
+            add_paycheck()
+        elif selection == 6:
+            view_paychecks()
+        elif selection == 7:
+            delete_paycheck()
+        elif selection == 8:
+            update_paycheck()
+        elif selection == 10:
+            print("Exiting...")
+            break
+        else:
+            print("Invalid selection. Please try again")
