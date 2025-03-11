@@ -6,7 +6,8 @@ context = zmq.Context()
 services = {
     "db_service": "tcp://localhost:5556",
     "paycheck_service": "tcp://localhost:5557",
-    "time_service": "tcp://localhost:5558"
+    "time_service": "tcp://localhost:5558",
+    "email_service": "tcp://localhost:5559"
 }
 
 sockets = {name: context.socket(zmq.REQ) for name in services}
@@ -24,6 +25,18 @@ def calculate_paycheck(hours, rate):
     socket.send_json({"hours": hours, "pay_rate": rate})
     response = socket.recv_json()
     return response
+
+def send_pdf(filename, email):
+    socket = sockets["email_service"]
+    email_data = {"name": "Arnav Goel",
+                  "email": "goelar@oregonstate.edu",
+                  "type": "paystub"}
+    socket.send_json(email_data)
+    message = socket.recv()
+    print(message)
+    with open(filename, "rb") as file:
+        data = file.read()
+        socket.send(data)
 
 def add_employee():
     first_name = input("Enter first name: ")
