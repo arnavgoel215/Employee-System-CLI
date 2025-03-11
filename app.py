@@ -21,7 +21,7 @@ def calculate_paycheck(hours, rate):
     socket = sockets["paycheck_service"]
     socket.send_json({"hours": hours, "pay_rate": rate})
     response = socket.recv_json()
-    return int(response["result"])
+    return response
 
 def add_employee():
     first_name = input("Enter first name: ")
@@ -77,7 +77,8 @@ def view_paychecks():
     if "data" in response:
         print("\nPaychecks:")
         for paycheck in response["data"]:
-            print(f"{paycheck[0]} {paycheck[1]} {paycheck[2]} {paycheck[3]} {paycheck[4]}")
+            print("Paycheck ID | Employee ID | Hours Worked | Total Pay")
+            print(f"{paycheck[0]} | {paycheck[1]} | {paycheck[2]} | {paycheck[3]} | {paycheck[4]}")
     else:
         print(response["message"])
 
