@@ -78,7 +78,7 @@ def view_paychecks():
         print("\nPaychecks:")
         for paycheck in response["data"]:
             print("Paycheck ID | Employee ID | Hours Worked | Total Pay")
-            print(f"{paycheck[0]} | {paycheck[1]} | {paycheck[2]} | {paycheck[3]} | {paycheck[4]}")
+            print(f"{paycheck[0]} | {paycheck[1]} | {paycheck[2]} | {paycheck[3]} | ${round(float(paycheck[4]), 2)}")
     else:
         print(response["message"])
 
