@@ -1,3 +1,5 @@
+import json
+
 import zmq
 
 context = zmq.Context()
@@ -26,17 +28,17 @@ def calculate_paycheck(hours, rate):
     response = socket.recv_json()
     return response
 
-def send_pdf(filename, email):
+def send_pdf(filename, email, name):
     socket = sockets["email_service"]
-    email_data = {"name": "Arnav Goel",
-                  "email": "goelar@oregonstate.edu",
+    email_data = {"name": name,
+                  "email": email,
                   "type": "paystub"}
-    socket.send_json(email_data)
-    message = socket.recv()
-    print(message)
-    with open(filename, "rb") as file:
-        data = file.read()
+    json_email = json.dump(email_data)
+    socket.send_json(json_email)
+    with open("paystub.pdf", "rb") as f:
+        data = f.read()
         socket.send(data)
+    socket.send("Q")
 
 def add_employee():
     first_name = input("Enter first name: ")
