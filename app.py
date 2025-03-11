@@ -1,12 +1,27 @@
 import zmq
 
 context = zmq.Context()
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:5556")
+
+services = {
+    "db_service": "tcp://localhost:5556",
+    "paycheck_service": "tcp://localhost:5557",
+    "time_service": "tcp://localhost:5558"
+}
+
+sockets = {name: context.socket(zmq.REQ) for name in services}
+for name, address in services.items():
+    sockets[name].connect(address)
 
 def send_request(command, data={}):
+    socket = sockets["db_service"]
     socket.send_json({"command": command, **data})
     return socket.recv_json()
+
+def calculate_paycheck(hours, rate):
+    socket = sockets["paycheck_service"]
+    socket.send_json({"hours": hours, "pay_rate": rate})
+    response = socket.recv_json()
+    return int(response["result"])
 
 def add_employee():
     first_name = input("Enter first name: ")
@@ -21,9 +36,9 @@ def view_employees():
     response = send_request("view_employees")
     if "data" in response:
         print("\nEmployees:")
-        print(f"ID:   First Name:   Last Name:       Phone:             Email:")
+        print("Employee ID | First Name | Last Name | Phone Number | Email Address")
         for employee in response["data"]:
-            print(f"{employee[0]}     {employee[1]}          {employee[2]}            {employee[3]}       {employee[4]}")
+            print(f"{employee[0]} | {employee[1]} | {employee[2]} | {employee[3]} | {employee[4]}")
     else:
         print(response["message"])
 
@@ -50,7 +65,7 @@ def update_employee():
 def add_paycheck():
     hours = int(input("Enter hours worked: "))
     rate = float(input("Enter hourly rate of pay: "))
-    total_pay = hours * rate
+    total_pay = calculate_paycheck(hours, rate)
     view_employees()
     employee_id = input("Enter id number of employee for this paycheck: ")
     response = send_request("add_paycheck",
@@ -88,11 +103,11 @@ def update_paycheck():
 if __name__ == "__main__":
     while True:
         print("\nEmployee Management System Menu:")
-        print("1. Add Employee")
+        print("1. Add Employee (You will have to enter each employee manually)")
         print("2. View Employees")
         print("3. Delete Employee")
         print("4. Update Employee")
-        print("5. Add Paycheck")
+        print("5. Add Paycheck (You will have to enter each paycheck manually)")
         print("6. View Paychecks")
         print("7. Delete Paycheck")
         print("8. Update Paycheck")
