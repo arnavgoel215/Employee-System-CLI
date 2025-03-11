@@ -28,15 +28,18 @@ def calculate_paycheck(hours, rate):
     response = socket.recv_json()
     return response
 
-def send_pdf(filename, email, name):
+def send_pdf():
+    name = input("Enter name: ")
+    email = input("Enter email address: ")
+    filename = input("Enter name of file to send: ")
     socket = sockets["email_service"]
     email_data = {"name": name,
                   "email": email,
                   "type": "paystub"}
-    json_email = json.dump(email_data)
+    json_email = json.dumps(email_data)
     socket.send_json(json_email)
-    with open("paystub.pdf", "rb") as f:
-        data = f.read()
+    with open(filename, "rb") as file:
+        data = file.read()
         socket.send(data)
     socket.send("Q")
 
@@ -153,6 +156,8 @@ if __name__ == "__main__":
             delete_paycheck()
         elif selection == 8:
             update_paycheck()
+        elif selection == 9:
+            send_pdf()
         elif selection == 10:
             print("Exiting...")
             break
