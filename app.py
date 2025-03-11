@@ -102,6 +102,10 @@ def update_paycheck():
     print(response["message"])
 
 if __name__ == "__main__":
+    socket = sockets["time_service"]
+    socket.send_string("GET_DATE")
+    curr_date = socket.recv_string()
+    print(f"The date today is {curr_date}")
     while True:
         print("\nEmployee Management System Menu:")
         print("1. Add Employee (You will have to enter each employee manually)")
