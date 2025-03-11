@@ -95,7 +95,6 @@ def update_paycheck():
     paycheck_id = input("Enter id number of paycheck you want to update: ")
     hours = input("Enter hours worked: ")
     rate = input("Enter hourly rate of pay: ")
-    total_pay = hours * rate
     employee_id = ("Enter id number of employee for this paycheck: ")
     response = send_request("update_paycheck",
                             {"id": paycheck_id, "hours": hours, "rate": rate, "pay": total_pay, "employee_id": employee_id})
