@@ -2,6 +2,7 @@ import zmq
 
 context = zmq.Context()
 
+# Addresses for microservices
 services = {
     "db_service": "tcp://localhost:5556",
     "paycheck_service": "tcp://localhost:5557",
@@ -13,6 +14,7 @@ for name, address in services.items():
     sockets[name].connect(address)
 
 def send_request(command, data={}):
+    """Sends request to database service"""
     socket = sockets["db_service"]
     socket.send_json({"command": command, **data})
     return socket.recv_json()
@@ -101,7 +103,7 @@ def update_paycheck():
     print(response["message"])
 
 if __name__ == "__main__":
-    socket = sockets["time_service"]
+    socket = sockets["time_service"]  # Connects to date microservice
     socket.send_string("GET_DATE")
     curr_date = socket.recv_string()
     print(f"The date today is {curr_date}")
